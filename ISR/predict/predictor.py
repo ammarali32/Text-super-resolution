@@ -60,13 +60,8 @@ class Predictor:
             self.logger.error('Error: Weights path not specified (check config file).')
             raise ValueError('Weights path not specified (check config file).')
 
-        session_config_path = self.weights_path.parent / 'session_config.yml'
-        if session_config_path.exists():
-            conf = yaml.load(session_config_path.read_text(), Loader=yaml.FullLoader)
-        else:
-            self.logger.warning('Could not find weights training configuration')
-            conf = {}
-        conf.update({'pre-trained-weights': self.weights_path.name})
+        session_config_path = 'session_config.yml'
+        conf = yaml.load(session_config_path, Loader=yaml.FullLoader)      
         return conf
 
     def _make_basename(self):
@@ -81,7 +76,7 @@ class Predictor:
         """ Runs the prediction. """
 
         self.model = model
-        self.weights_path = Path(weights_path)
+        self.weights_path = weights_path
         weights_conf = self._load_weights()
         out_folder = self.output_dir / self._make_basename() / get_timestamp()
         self.logger.info('Results in:\n > {}'.format(out_folder))
@@ -89,8 +84,6 @@ class Predictor:
             self.logger.warning('Directory exists, might overwrite files')
         else:
             out_folder.mkdir(parents=True)
-        if weights_conf:
-            yaml.dump(weights_conf, (out_folder / 'weights_config.yml').open('w'))
         # Predict and store
         for img_path in self.img_ls:
             output_path = out_folder / img_path.name
